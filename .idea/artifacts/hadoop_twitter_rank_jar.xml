@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="hadoop-twitter-rank:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/hadoop_twitter_rank_jar</output-path>
+    <root id="archive" name="hadoop-twitter-rank.jar">
+      <element id="module-output" name="hadoop-twitter-rank" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/hadoop-core-1.2.1.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
