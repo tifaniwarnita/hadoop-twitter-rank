@@ -1,7 +1,9 @@
+import com.sun.org.apache.xpath.internal.operations.Or;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapreduce.Job;
@@ -16,7 +18,9 @@ import java.io.IOException;
  * Created by Tifani on 11/30/2016.
  */
 public class TwitterRank {
+    public static final int RANK = 5;
     private static final int itr = 3;
+
     public static void main(String[] args) throws Exception {
         String inputPath = args[0];
         String outputPath = args[1];
@@ -28,16 +32,16 @@ public class TwitterRank {
         for (int i=0; i < itr ; i++) {
             //Job 2: Calculate new rank
             int nextI = i + 1;
-            TwitterRank.runRankCalculation(outputPath + "/iterasi" + i, outputPath + "/iterasi" + nextI );
+            TwitterRank.runRankCalculation(outputPath + "/iterasi" + i, outputPath + "/iterasi" + nextI, nextI);
         }
 
         // Job 3: Order by rank
-        // TwitterRank.runRankOrdering(outputPath + "/iterasi" + itr, outputPath + "/result");
+        TwitterRank.runRankOrdering(outputPath + "/iterasi" + itr, outputPath + "/result");
     }
 
     private static void initializeTwitterRank(String inputPath, String outputPath) throws IOException, ClassNotFoundException, InterruptedException {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "[tifani/#1-initialize-twitter-rank]");
+        Job job = Job.getInstance(conf, "[tifani] #1-initialize-twitter-rank");
 
         // Set Classes
         job.setJarByClass(TwitterRank.class);
@@ -47,17 +51,17 @@ public class TwitterRank {
         // Set Output and Input Parameters
         job.setMapOutputKeyClass(Text.class);
         job.setMapOutputValueClass(Text.class);
-
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
+
         FileInputFormat.addInputPath(job, new Path(inputPath));
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
         job.waitForCompletion(true);
     }
 
-    private static void runRankCalculation(String inputPath, String outputPath) throws IOException, ClassNotFoundException, InterruptedException {
+    private static void runRankCalculation(String inputPath, String outputPath, int itr) throws IOException, ClassNotFoundException, InterruptedException {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "[tifani/#2-run-calculation]");
+        Job job = Job.getInstance(conf, "[tifani] #2-run-calculation (itr-" + itr +  ")");
 
         // Set Classes
         job.setJarByClass(TwitterRank.class);
@@ -65,6 +69,8 @@ public class TwitterRank {
         job.setReducerClass(RankCalcReducer.class);
 
         // Set Output and Input Parameters
+        job.setMapOutputKeyClass(Text.class);
+        job.setMapOutputValueClass(Text.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
 
@@ -76,13 +82,14 @@ public class TwitterRank {
 
     private static void runRankOrdering(String inputPath, String outputPath) throws IOException, ClassNotFoundException, InterruptedException {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "[tifani/#3-rank-ordering]");
+        Job job = Job.getInstance(conf, "[tifani] #3-rank-ordering");
 
         // Set Classes
         job.setJarByClass(TwitterRank.class);
         job.setMapperClass(OrderMapper.class);
+        job.setReducerClass(OrderReducer.class);
 
-        job.setOutputKeyClass(FloatWritable.class);
+        job.setOutputKeyClass(NullWritable.class);
         job.setOutputValueClass(Text.class);
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);

@@ -1,29 +1,38 @@
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Created by Tifani on 12/1/2016.
  */
-public class OrderMapper extends Mapper<LongWritable, Text, FloatWritable, Text> {
+public class OrderMapper extends Mapper<LongWritable, Text, NullWritable, Text> {
+    private TreeMap<String, String> userRank = new TreeMap<String, String>();
 
     @Override
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-        String[] userAndRank = getUserAndRank(key, value);
+        String[] userAndRank = getUserAndRank(value);
 
-        float parseFloat = Float.parseFloat(userAndRank[1]);
+        double parseRank = Double.parseDouble(userAndRank[1]);
+        String result = userAndRank[1] + "\t" + userAndRank[0];
+        userRank.put(userAndRank[0], result);
 
-        Text page = new Text(userAndRank[0]);
-        FloatWritable rank = new FloatWritable(parseFloat);
-
-        context.write(rank, page);
+        if (userRank.size() > TwitterRank.RANK) {
+            userRank.remove(userRank.firstKey());
+        }
     }
 
-    private String[] getUserAndRank(LongWritable key, Text value) throws CharacterCodingException {
+    @Override
+    protected void cleanup(Context context) throws IOException, InterruptedException {
+        for (String result : userRank.values()) {
+            context.write(NullWritable.get(), new Text(result));
+        }
+    }
+
+    private String[] getUserAndRank(Text value) throws CharacterCodingException {
         String[] userAndRank = new String[2];
         int tabPageIndex = value.find("\t");
         int tabRankIndex = value.find("\t", tabPageIndex + 1);
