@@ -23,12 +23,12 @@ public class RankCalcReducer extends Reducer<Text, Text, Text, Text> {
         // - add the share to sumShareOtherUserRanks
         for(Text val : values) {
             userWithRank = val.toString();
-            if(userWithRank.equals("!")) {
+            if(userWithRank.equals("#")) {
                 isExistingUser = true;
                 continue;
             }
 
-            if(userWithRank.startsWith("|")){
+            if(userWithRank.startsWith("$")){
                 links = "\t"+userWithRank.substring(1);
                 continue;
             }

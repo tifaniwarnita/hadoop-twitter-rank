@@ -1,11 +1,6 @@
-import com.sun.org.apache.xpath.internal.operations.Or;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.JobClient;
+import org.apache.hadoop.io.*;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
@@ -41,12 +36,13 @@ public class TwitterRank {
 
     private static void initializeTwitterRank(String inputPath, String outputPath) throws IOException, ClassNotFoundException, InterruptedException {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "[tifani] #1-initialize-twitter-rank");
+        Job job = Job.getInstance(conf, "[tifani] #1 initialize-twitter-rank");
 
         // Set Classes
         job.setJarByClass(TwitterRank.class);
         job.setMapperClass(InitMapper.class);
         job.setReducerClass(InitReducer.class);
+        job.setNumReduceTasks(122);
 
         // Set Output and Input Parameters
         job.setMapOutputKeyClass(Text.class);
@@ -61,12 +57,13 @@ public class TwitterRank {
 
     private static void runRankCalculation(String inputPath, String outputPath, int itr) throws IOException, ClassNotFoundException, InterruptedException {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "[tifani] #2-run-calculation (itr-" + itr +  ")");
+        Job job = Job.getInstance(conf, "[tifani] #2 run-calculation (itr-" + itr +  ")");
 
         // Set Classes
         job.setJarByClass(TwitterRank.class);
         job.setMapperClass(RankCalcMapper.class);
         job.setReducerClass(RankCalcReducer.class);
+        job.setNumReduceTasks(122);
 
         // Set Output and Input Parameters
         job.setMapOutputKeyClass(Text.class);
@@ -82,12 +79,13 @@ public class TwitterRank {
 
     private static void runRankOrdering(String inputPath, String outputPath) throws IOException, ClassNotFoundException, InterruptedException {
         Configuration conf = new Configuration();
-        Job job = Job.getInstance(conf, "[tifani] #3-rank-ordering");
+        Job job = Job.getInstance(conf, "[tifani] #3 rank-ordering");
 
         // Set Classes
         job.setJarByClass(TwitterRank.class);
         job.setMapperClass(OrderMapper.class);
         job.setReducerClass(OrderReducer.class);
+        job.setNumReduceTasks(122);
 
         job.setOutputKeyClass(NullWritable.class);
         job.setOutputValueClass(Text.class);

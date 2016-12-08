@@ -1,5 +1,3 @@
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
@@ -11,16 +9,19 @@ import java.util.StringTokenizer;
  */
 public class InitMapper extends Mapper<Object, Text, Text, Text> {
     private Text id = new Text();
-    private Text folower = new Text();
+    private Text follower = new Text();
 
     @Override
     public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
         StringTokenizer itr = new StringTokenizer(value.toString());
         while (itr.hasMoreTokens()) {
-            id.set(String.valueOf(itr.nextToken()));
+            String idUser = itr.nextToken();
             if (itr.hasMoreTokens()) {
-                folower.set(String.valueOf(itr.nextToken()));
-                context.write(folower, id);
+                String idFollower = itr.nextToken();
+                id.set(idUser);
+                follower.set(idFollower);
+                context.write(follower, id);
+                context.write(id, new Text("*"));
             }
         }
     }

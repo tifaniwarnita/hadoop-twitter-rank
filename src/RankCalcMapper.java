@@ -18,9 +18,9 @@ public class RankCalcMapper extends Mapper<LongWritable, Text, Text, Text> {
         String userWithRank = Text.decode(value.getBytes(), 0, rankTabIndex+1);
 
         // Mark page as an existing user
-        context.write(new Text(page), new Text("!"));
+        context.write(new Text(page), new Text("#"));
 
-        // Skip user with no followers
+        // Skip user with no following
         if(rankTabIndex == -1) return;
 
         String users = Text.decode(value.getBytes(), rankTabIndex+1, value.getLength()-(rankTabIndex+1));
@@ -33,6 +33,6 @@ public class RankCalcMapper extends Mapper<LongWritable, Text, Text, Text> {
         }
 
         // Put the original links of the page for the reduce output
-        context.write(new Text(page), new Text("|"+users));
+        context.write(new Text(page), new Text("$"+users));
     }
 }

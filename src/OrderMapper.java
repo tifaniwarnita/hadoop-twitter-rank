@@ -3,33 +3,16 @@ import org.apache.hadoop.mapreduce.Mapper;
 
 import java.io.IOException;
 import java.nio.charset.CharacterCodingException;
-import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Created by Tifani on 12/1/2016.
  */
 public class OrderMapper extends Mapper<LongWritable, Text, NullWritable, Text> {
-    private TreeMap<String, String> userRank = new TreeMap<String, String>();
 
     @Override
     public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
         String[] userAndRank = getUserAndRank(value);
-
-        double parseRank = Double.parseDouble(userAndRank[1]);
-        String result = userAndRank[1] + "\t" + userAndRank[0];
-        userRank.put(userAndRank[0], result);
-
-        if (userRank.size() > TwitterRank.RANK) {
-            userRank.remove(userRank.firstKey());
-        }
-    }
-
-    @Override
-    protected void cleanup(Context context) throws IOException, InterruptedException {
-        for (String result : userRank.values()) {
-            context.write(NullWritable.get(), new Text(result));
-        }
+        context.write(NullWritable.get(), new Text(userAndRank[0] + "\t" + userAndRank[1]));
     }
 
     private String[] getUserAndRank(Text value) throws CharacterCodingException {

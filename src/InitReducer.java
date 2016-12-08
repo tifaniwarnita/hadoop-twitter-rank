@@ -1,10 +1,7 @@
-import org.apache.hadoop.io.ArrayWritable;
-import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import java.io.IOException;
-import java.util.ArrayList;
 
 /**
  * Created by Tifani on 11/30/2016.
@@ -21,12 +18,19 @@ public class InitReducer extends Reducer<Text, Text, Text, Text> {
 
         boolean first = true;
         for (Text val : values) {
-            if (!first) {
-                sb.append(",");
+            if (!val.toString().equals("*")) {
+                if (!first) {
+                    sb.append(",");
+                }
+                first = false;
+                sb.append(val.toString());
             }
-            first = false;
-            sb.append(val.toString());
         }
+        if (first) {
+            sb = new StringBuilder();
+            sb.append(initPageRank);
+        }
+
         context.write(key, new Text(sb.toString()));
     }
 }
